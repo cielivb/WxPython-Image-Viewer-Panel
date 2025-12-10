@@ -40,58 +40,32 @@ class ViewerPanel(wx.Panel):
         self.Bind(wx.EVT_SIZE, self.OnSize)
     
     def OnSize(self, event):
-        #print('Size event!', self.GetParent().GetSize())
-        #self.SetSize(self.GetParent().GetSize())
+        
         """Pan and zoom image according to resize"""
         print('Size event!', event.GetSize())
-        if self.size_evt_ct < 3:
-            self.size_evt_ct += 1
-            return
+        self.Refresh()
         
-        
-        new_height = event.GetSize()[0]
-        new_width = event.GetSize()[1]
-        height_diff = new_height - self.old_frame_height
-        width_diff = new_width - self.old_frame_width
-        
-        # Need to calculate pan_vec, in_prog_vec, and zoom_factor
-        self.ProcessPan(wx.Size(width_diff, height_diff), True)
-        #if new_height > self.image_height:
-            # Move image down the panel
-           # self.ProcessPan(wx.Size(width_diff, height_diff), True)
-            #pass
-       # if new_width > self.image_width:
-            # Move image east across the panel
-          #  pass
-          
-        # Update pan vector (+= in_prog_vec) (Note duplicated code)
-        panvec_tuple = self.pan_vec.Get()
-        inprogvec_tuple = self.in_prog_vec.Get()
-        sum_x = panvec_tuple[0] + inprogvec_tuple[0]
-        sum_y = panvec_tuple[1] + inprogvec_tuple[1]
-        self.pan_vec = wx.Point2D(sum_x, sum_y)     
-        
-        self.in_prog_pan_vec = wx.Point2D(0,0)
-        
-        
-        # Calculate zoom factor using % area change
-        # Not a permanent solution
-        old_area = self.old_frame_height * self.old_frame_width
-        new_area = new_height * new_width
-        zoom_factor = new_area/old_area
-        self.zoom_factor = 100*zoom_factor
-        
-        self.FinishPan(False)
-        self.old_frame_height = new_height
-        self.old_frame_width = new_width
-        
+    def GetBitmapPosition(self):
+        """Determine bitmap draw location on panel as function of panel 
+        size and image size"""
+        panel_size = self.GetSize()
+        panel_width = panel_size[0]
+        panel_height = panel_size[1]
+        panel_centre_x = panel_width/2
+        panel_centre_y = panel_height/2
+        # Want centre of image to be located on panel_centre.
+        image_centre_x = self.image_width/2
+        image_centre_y = self.image_height/2
+        draw_x = panel_centre_x - image_centre_x
+        draw_y = panel_centre_y - image_centre_y
+        return (draw_x, draw_y)
         
     
     def DoDrawCanvas(self, gc):
         image = gc.CreateBitmap(wx.Bitmap(self.image_file))
         height, width = cv2.imread(self.image_file).shape[0:2]
-        #x, y = self.GetBitmapPosition()
-        gc.DrawBitmap(image, 0, 0, width, height)
+        x, y = self.GetBitmapPosition()
+        gc.DrawBitmap(image, x, y, width, height)
         
     def OnPaint(self, event):
         # Create Paint DC
@@ -104,6 +78,7 @@ class ViewerPanel(wx.Panel):
             a = self.zoom_factor / 100
             
             # Add self.pan_vec and self.in_prog_vec together
+            print(self.pan_vec, self.in_prog_vec)
             panvec_tuple = self.pan_vec.Get()
             inprogvec_tuple = self.in_prog_vec.Get()
             total_x = panvec_tuple[0] + inprogvec_tuple[0]
