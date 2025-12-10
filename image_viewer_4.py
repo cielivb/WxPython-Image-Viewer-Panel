@@ -18,6 +18,12 @@ class ViewerPanel(wx.Panel):
     def __init__(self, parent, image_file):
         wx.Panel.__init__(self, parent, -1)
         self.image_file = image_file
+        self.image_height = cv2.imread(image_file).shape[0]        
+        self.image_width = cv2.imread(image_file).shape[1]
+        self.SetSize(self.image_width, self.image_height)
+        
+        self.old_frame_width = self.image_width
+        self.old_frame_height = self.image_height
         
         self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
         self.zoom_factor = 100
@@ -30,12 +36,23 @@ class ViewerPanel(wx.Panel):
         self.Bind(wx.EVT_GESTURE_ZOOM, self.OnPinch)
         self.Bind(wx.EVT_LEFT_DCLICK, self.OnDoubleClick)
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
+        self.Bind(wx.EVT_SIZE, self.OnSize)
     
+    def OnSize(self, event):
+        #print('Size event!', self.GetParent().GetSize())
+        #self.SetSize(self.GetParent().GetSize())
+        """Pan and zoom image according to resize"""
+        print('Size event!', event.GetSize())
+        height_diff = event.GetSize()[0] - self.old_frame_height
+        width_diff = event.GetSize()[1] - self.old_frame_width
+        
+        
     
     def DoDrawCanvas(self, gc):
         image = gc.CreateBitmap(wx.Bitmap(self.image_file))
         height, width = cv2.imread(self.image_file).shape[0:2]
-        gc.DrawBitmap(image, 5, 5, width, height)
+        #x, y = self.GetBitmapPosition()
+        gc.DrawBitmap(image, 0, 0, width, height)
         
     def OnPaint(self, event):
         # Create Paint DC
@@ -169,10 +186,26 @@ class ViewerPanel(wx.Panel):
 class Base(wx.Frame):
     def __init__(self, *args, **kw):
         super().__init__(*args, **kw)
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        
         #self.panel = ViewerPanel(self, 'images/small.png')
         self.panel = ViewerPanel(self, 'images/medium.jpg')
         #self.panel = ViewerPanel(self, 'images/big.gif') #SHOWS FIRST SCENE ONLY
         #self.panel = ViewerPanel(self, 'images/nebula.webp') #FAILS
+        self.SetSize(self.panel.GetSize())
+        self.SetMinSize((300,300))
+        
+        self.zoom_out_button = wx.Button(self, label='-', size=(30,30))
+        self.zoom_in_button = wx.Button(self, label='+', size=(30,30))
+        self.zoom_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.zoom_sizer.Add(self.zoom_out_button, 1, wx.ALL, 5)
+        self.zoom_sizer.Add(self.zoom_in_button, 1, wx.ALL, 5)
+        
+        sizer.Add(self.panel, 20, wx.EXPAND)
+        sizer.Add(self.zoom_sizer, 1, wx.ALIGN_CENTRE, 5)
+        self.SetSizer(sizer)
+        self.SetAutoLayout(True)
 
 
 def main():
