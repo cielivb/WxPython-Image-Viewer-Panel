@@ -25,6 +25,7 @@ class ViewerPanel(wx.Panel):
         
         self.InitGraphicsAttr(image_file)
         self.InitVecAttr()
+        self.SetBindings()
         
         
     ### Initialisation methods -----------------------------------------
@@ -40,7 +41,10 @@ class ViewerPanel(wx.Panel):
         """ Initialise pan vector and related attributes """
         self.pan_vec = np.array([0,0]) # Current pan position
         self.in_prog_vec = np.array([0,0]) # Difference between pan_vec and actual pan position
-        self.is_panning = False # Whether pan is currently in progress        
+        self.is_panning = False # Whether pan is currently in progress    
+        
+    def SetBindings(self):
+        pass
         
     
     ## Normalisation methods --------------------------------------------
