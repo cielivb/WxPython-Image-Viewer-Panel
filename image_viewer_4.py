@@ -19,9 +19,9 @@ import wx.lib.inspection
 ### Class ViewerPanel (where all the action is!!) ----------------------
 
 class ViewerPanel(wx.Panel):
-    def __init__(self, parent, image_file):
-        wx.Panel.__init__(self, parent, -1)
-        pass
+    def __init__(self, image_file, *args, **kw):
+        wx.Panel.__init__(self, *args, **kw)
+        self.image_file = image_file
     
     
     ## Normalisation methods --------------------------------------------
@@ -53,8 +53,18 @@ class ViewerPanel(wx.Panel):
         
         
     def OnPaint(self, event):
-        pass
+        """ Paint the image onto the ViewerPanel """
+        # Initialise paint device context
+        dc = wx.AutoBufferedPaintDC(self)
+        dc.Clear()
         
+        # Set to start painting from centre of window        
+        size_x, size_y = self.GetClientSize()
+        dc.SetDeviceOrigin(int(size_x/2), int(size_y/2))
+        
+        # Create graphics context from Paint DC
+        gc = wx.GraphicsContext.Create(dc)
+    
     
     
     ### Pan methods ----------------------------------------------------
@@ -120,7 +130,9 @@ class BasePanel(wx.Panel):
     def InitUI(self):
         """ Add ViewerPanel and Zoom button widgets to self """
         # Create panel components
-        viewer_panel = ViewerPanel(self, self.image_file)
+        viewer_panel = ViewerPanel(image_file=self.image_file, 
+                                   parent=self,
+                                   id=wx.ID_ANY)
         self.zoom_out_btn = wx.Button(self, label='-', size=(30,30))
         self.zoom_in_btn = wx.Button(self, label='+', size=(30,30))
         
