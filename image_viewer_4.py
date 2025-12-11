@@ -33,7 +33,7 @@ class ViewerPanel(wx.Panel):
     def InitGraphicsAttr(self, image_file):
         """ Initialise window attributes related to graphics """
         self.image_file = image_file
-        self.image = wx.Bitmap(self.image_file)
+        self.image = wx.Image(self.image_file)
         self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
         self.zoom_factor = 1        
     
@@ -83,7 +83,7 @@ class ViewerPanel(wx.Panel):
         
     
     def DrawCanvas(self, gc):
-        image = gc.CreateBitmap(self.image)
+        image = gc.CreateBitmap(wx.Bitmap(self.image))
         height, width = 300, 300 # Implement auto-adjust function later
         gc.DrawBitmap(image, 0, 0, 300, 300)
         
