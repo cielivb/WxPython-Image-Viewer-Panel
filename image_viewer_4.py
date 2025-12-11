@@ -69,12 +69,16 @@ class ViewerPanel(wx.Panel):
         """
         # Get viewer panel centre position
         panel_size = self.GetSize()
-        panel_centre = np.array([panel_size[0]/2,
-                                 panel_size[1]/2]) # [width, height]
+        panel_centre = np.array([panel_size[0]/2, panel_size[1]/2]) # w x h
         
         # Get image centre
+        image_centre = np.array([self.image.GetWidth()/2, 
+                                 self.image.GetHeight()/2])
         
         # Get draw start coordinates (panel centre - image_centre)
+        start_coords = panel_centre - image_centre
+        
+        return (start_coords[0], start_coords[1])
     
     
     def GetBitmapSize(self):
@@ -85,7 +89,9 @@ class ViewerPanel(wx.Panel):
     def DrawCanvas(self, gc):
         image = gc.CreateBitmap(wx.Bitmap(self.image))
         height, width = 300, 300 # Implement auto-adjust function later
-        gc.DrawBitmap(image, 0, 0, 300, 300)
+        start_coords = self.GetBitmapPosition()
+        gc.DrawBitmap(image, start_coords[0], start_coords[1],
+                      self.image.GetWidth(), self.image.GetHeight())
         
         
     def OnPaint(self, event):
@@ -233,7 +239,7 @@ def main(image_file):
                 pos=wx.DefaultPosition, size=(300,300),
                 style=wx.DEFAULT_FRAME_STYLE,
                 name='ImageViewer')
-    wx.lib.inspection.InspectionTool().Show()
+    #wx.lib.inspection.InspectionTool().Show()
     app.MainLoop()
 
 
