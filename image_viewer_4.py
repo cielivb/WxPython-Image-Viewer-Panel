@@ -50,6 +50,7 @@ class ViewerPanel(wx.Panel):
         
         # Zoom bindings
         self.Bind(wx.EVT_LEFT_DCLICK, self.OnDoubleClick)
+        self.Bind(wx.EVT_GESTURE_ZOOM, self.OnZoomGesture)
         
     
     ## Normalisation methods --------------------------------------------
@@ -199,19 +200,30 @@ class ViewerPanel(wx.Panel):
         # I don't fully understand how this works but it works
         xy_pt = st_pt / old_zoom
         new_st_pt = xy_pt * new_zoom
-        
-        # Set self.panvec to new_st_pt - pos
         self.pan_vec = new_st_pt - pos
         
         self.Refresh()
     
         
-    def OnPinch(self, event):
-        pass
+    def OnZoomGesture(self, event):
+        """ Process pinch zoom gesture """
+        if self.is_panning: self.FinishPan(False)
+        old_zoom = self.zoom_factor
+        new_zoom_factor = event.GetZoomFactor()
+        
+        # Smooth out sudden zoom factor shifts
+        if abs(old_zoom - new_zoom_factor) > 10:
+            if old_zoom > new_zoom_factor: # Zooming out
+                new_zoom_factor = old_zoom - 2
+            else: # Zooming in
+                new_zoom_factor = old_zoom + 2
+        
+        self.zoom_factor = new_zoom_factor
+        self.OnZoom(old_zoom, self.zoom_factor, event.GetPosition())
     
         
     def OnDoubleClick(self, event):
-        """Zoom in by 50%"""
+        """ Zoom in by 50% """
         old_zoom = self.zoom_factor
         self.zoom_factor = old_zoom * 1.5
         self.OnZoom(old_zoom, self.zoom_factor, event.GetPosition())
