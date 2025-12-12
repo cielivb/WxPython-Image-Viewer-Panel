@@ -240,7 +240,11 @@ class ViewerPanel(wx.Panel):
     
     
     def OnZoomInButton(self, event):
-        pass
+        """ Zoom in by 50% """
+        old_zoom = self.zoom_factor
+        self.zoom_factor = old_zoom * 1.5
+        centre = (200, 150) # Implement self.GetViewerPanelCentre() later
+        self.OnZoom(old_zoom, self.zoom_factor, centre)
 
 
 
@@ -301,8 +305,11 @@ class BasePanel(wx.Panel):
         
     
     def OnZoomIn(self, event):
-        """ Zoom in by 50% """
-        print('Zoom in button pressed')
+        """ Post Zoom In Button event to ViewerPanel """
+        event = wx.CommandEvent(wx.EVT_BUTTON.typeId,
+                                self.zoom_in_btn.Id)
+        viewer_panel = self.GetChildren()[0]
+        viewer_panel.GetEventHandler().ProcessEvent(event)
 
         
 
