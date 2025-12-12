@@ -1,13 +1,10 @@
 """
 Image viewer with a pan and zoom mechanism comparable to Google Maps.
 
-This script is designed to be portable into a larger GUI application. Simply 
-import this module into your script and call 
-ImageViewer.view(self, image_file) where image_file is a string representing the 
-relative file path of the image you wish to display.
-
-Inspired by demo code logic at
-https://forums.wxwidgets.org/viewtopic.php?p=196414#p196414
+This script is designed to be portable into a larger GUI application.
+Simply import this module into your script and call
+ImageViewer.view(self, image_file) where image_file is a string
+representing the relative file path of the image you wish to display.
 
 """
 import os
@@ -20,36 +17,36 @@ from PIL import Image as PILImage
 
 
 
-### Class ViewerPanel (where all the action is!!) ----------------------
+### Class _ViewerPanel (where all the action is!!) ----------------------
 
-class ViewerPanel(wx.Panel):
+class _ViewerPanel(wx.Panel):
     """ Panel onto which the image is drawn """
     def __init__(self, image_file, *args, **kw):
         wx.Panel.__init__(self, *args, **kw)
 
-        self.InitGraphicsAttr(image_file)
-        self.InitVecAttr()
-        self.SetBindings()
+        self._init_graphics_attr(image_file)
+        self._init_vec_attr()
+        self._set_bindings()
 
 
 
     ### Initialisation methods -----------------------------------------
 
-    def InitGraphicsAttr(self, image_file):
+    def _init_graphics_attr(self, image_file):
         """ Initialise window attributes related to graphics """
         self.image_file = image_file
-        self.image = self.LoadImage(self.image_file)
+        self.image = self._load_image(self.image_file)
         self.scaled_img_dims = (self.image.GetWidth(),
                                 self.image.GetHeight())
         self.SetBackgroundStyle(wx.BG_STYLE_PAINT)
         self.zoom_factor = 1
 
 
-    def InitVecAttr(self):
+    def _init_vec_attr(self):
         """ Initialise pan vector and related attributes """
         self.pan_vec = np.array([0,0]) # Current pan position
 
-        # Pan start position (updated in OnLeftDown to represent event position)
+        # Pan start position (updated in _on_left_down to represent event position)
         self.in_prog_start = np.array([0,0])
 
         # Difference between pan_vec and actual pan position
@@ -58,28 +55,28 @@ class ViewerPanel(wx.Panel):
         self.is_panning = False # Whether pan is currently in progress
 
 
-    def SetBindings(self):
-        """ Set permanent ViewerPanel bindings """
-        self.Bind(wx.EVT_SIZE, self.OnSize)
-        self.Bind(wx.EVT_PAINT, self.OnPaint)
+    def _set_bindings(self):
+        """ Set permanent _ViewerPanel bindings """
+        self.Bind(wx.EVT_SIZE, self._on_size)
+        self.Bind(wx.EVT_PAINT, self._on_paint)
 
         # Zoom bindings
-        self.Bind(wx.EVT_LEFT_DCLICK, self.OnDoubleClick)
-        self.Bind(wx.EVT_GESTURE_ZOOM, self.OnZoomGesture)
-        self.Bind(wx.EVT_BUTTON, self.OnZoomOutButton, id=1)
-        self.Bind(wx.EVT_BUTTON, self.OnZoomInButton, id=2)
+        self.Bind(wx.EVT_LEFT_DCLICK, self._on_double_click)
+        self.Bind(wx.EVT_GESTURE_ZOOM, self._on_zoom_gesture)
+        self.Bind(wx.EVT_BUTTON, self._on_zoom_out_button, id=1)
+        self.Bind(wx.EVT_BUTTON, self._on_zoom_in_button, id=2)
 
         # Pan binding
-        self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
+        self.Bind(wx.EVT_LEFT_DOWN, self._on_left_down)
 
         # Reset binding
-        self.Bind(wx.EVT_BUTTON, self.OnResetButton, id=3)
+        self.Bind(wx.EVT_BUTTON, self._on_reset_button, id=3)
 
 
 
     ## Utility methods --------------------------------------------
 
-    def GetViewerPanelCentre(self):
+    def _get_viewer_panel_centre(self):
         """ Get centre position relative to top left corner """
         panel_size = self.GetSize()
         panel_centre = (panel_size[0] / 2,
@@ -87,14 +84,14 @@ class ViewerPanel(wx.Panel):
         return panel_centre
 
 
-    def OnResetButton(self, event):
-        """ Restore ViewerPanel to initial state """
-        self.InitGraphicsAttr(self.image_file)
-        self.InitVecAttr()
+    def _on_reset_button(self, event):
+        """ Restore _ViewerPanel to initial state """
+        self._init_graphics_attr(self.image_file)
+        self._init_vec_attr()
         self.Refresh()
 
 
-    def LoadImage(self, image_file):
+    def _load_image(self, image_file):
         """ Load image file as wx.Image object """
 
         # Convert .webp image file to .png file
@@ -114,12 +111,12 @@ class ViewerPanel(wx.Panel):
 
     ## Paint methods ----------------------------------------------------
 
-    def OnSize(self, event):
-        """ Refresh background when ViewerPanel size changes """
+    def _on_size(self, event):
+        """ Refresh background when _ViewerPanel size changes """
         self.Refresh()
 
 
-    def GetBitmapPosition(self):
+    def _get_bitmap_position(self):
         """Determine bitmap draw location on panel as function of panel 
         size and image size.
         Want centre of image to be drawn on panel_centre.
@@ -127,7 +124,7 @@ class ViewerPanel(wx.Panel):
         need to calculate this position.
         """
         # Get viewer panel centre position (width x height)
-        panel_centre_tuple = self.GetViewerPanelCentre()
+        panel_centre_tuple = self._get_viewer_panel_centre()
         panel_centre = np.array([panel_centre_tuple[0],
                                  panel_centre_tuple[1]])
 
@@ -141,7 +138,7 @@ class ViewerPanel(wx.Panel):
         return (start_coords[0], start_coords[1])
 
 
-    def GetBitmapSize(self):
+    def _get_bitmap_size(self):
         """ Get display image dimensions based on panel height and width. """
 
         # Get panel and scaled image dimensions
@@ -179,17 +176,17 @@ class ViewerPanel(wx.Panel):
         return self.scaled_img_dims
 
 
-    def DrawCanvas(self, gc):
-        """ Draw image onto ViewerPanel """
+    def _draw_canvas(self, gc):
+        """ Draw image onto _ViewerPanel """
         image = gc.CreateBitmap(wx.Bitmap(self.image))
-        width, height = self.GetBitmapSize()
-        start_coords = self.GetBitmapPosition()
+        width, height = self._get_bitmap_size()
+        start_coords = self._get_bitmap_position()
         gc.DrawBitmap(image, start_coords[0], start_coords[1],
-                      self.scaled_img_dims[0], self.scaled_img_dims[1])
+                      width, height)
 
 
-    def OnPaint(self, event):
-        """ Prepare to draw on ViewerPanel """
+    def _on_paint(self, event):
+        """ Prepare to draw on _ViewerPanel """
         # Initialise paint device context
         dc = wx.AutoBufferedPaintDC(self)
         dc.Clear()
@@ -204,7 +201,7 @@ class ViewerPanel(wx.Panel):
             # Scale x and y axes equally according to zoom factor
             gc.Scale(self.zoom_factor, self.zoom_factor)
 
-            self.DrawCanvas(gc)
+            self._draw_canvas(gc)
 
         del gc
     
@@ -212,18 +209,20 @@ class ViewerPanel(wx.Panel):
     
     ### Pan methods ----------------------------------------------------
 
-    def ProcessPan(self, position, do_refresh):
+    def _process_pan(self, position, do_refresh):
         """ Update in progress vector then refresh display """
         self.in_prog_vec = self.in_prog_start - position
         if do_refresh:
             self.Refresh()
 
 
-    def FinishPan(self, do_refresh):
+    def _finish_pan(self, do_refresh):
         """ Restore attributes and bindings to pre-panning state """
         # Restore cursor to arrow and release mouse capture
-        if self.is_panning: self.SetCursor(wx.Cursor(wx.CURSOR_ARROW))
-        if self.HasCapture(): self.ReleaseMouse()
+        if self.is_panning:
+            self.SetCursor(wx.Cursor(wx.CURSOR_ARROW))
+        if self.HasCapture():
+            self.ReleaseMouse()
 
         # Remove bindings associated with left mouse down
         self.Unbind(wx.EVT_LEFT_UP)
@@ -241,27 +240,27 @@ class ViewerPanel(wx.Panel):
         if do_refresh: self.Refresh()
 
 
-    def OnLeftUp(self, event):
+    def _on_left_up(self, event):
         """ Process last pan event then finish pan """
         event_position = np.array([event.GetPosition()[0],
                                    event.GetPosition()[1]])
-        self.ProcessPan(event_position, False)
-        self.FinishPan(False)
+        self._process_pan(event_position, False)
+        self._finish_pan(False)
 
 
-    def OnMotion(self, event):
+    def _on_motion(self, event):
         """ Signal to process current pan event """
         event_position = np.array([event.GetPosition()[0],
                                    event.GetPosition()[1]])
-        self.ProcessPan(event_position, True)
+        self._process_pan(event_position, True)
 
 
-    def OnCaptureLost(self, event):
+    def _on_capture_lost(self, event):
         """ Finish pan if mouse capture is lost """
-        self.FinishPan(True)
+        self._finish_pan(True)
 
 
-    def OnLeftDown(self, event):
+    def _on_left_down(self, event):
         """ Initiate pan """
 
         # Turn the cursor into a hand cursor
@@ -275,9 +274,9 @@ class ViewerPanel(wx.Panel):
         self.is_panning = True
 
         # Set bindings
-        self.Bind(wx.EVT_LEFT_UP, self.OnLeftUp)
-        self.Bind(wx.EVT_MOTION, self.OnMotion)
-        self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.OnCaptureLost)
+        self.Bind(wx.EVT_LEFT_UP, self._on_left_up)
+        self.Bind(wx.EVT_MOTION, self._on_motion)
+        self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self._on_capture_lost)
 
         # Let cursor exit frame while performing pan
         self.CaptureMouse()
@@ -286,7 +285,7 @@ class ViewerPanel(wx.Panel):
 
     ### Zoom methods ---------------------------------------------------
 
-    def OnZoom(self, old_zoom, new_zoom, evt_pos):
+    def _on_zoom(self, old_zoom, new_zoom, evt_pos):
         """ Set self.pan_vec such that the point below the cursor (i.e,
         evt_pos) is the new absolute pan site """
 
@@ -304,9 +303,9 @@ class ViewerPanel(wx.Panel):
         self.Refresh()
 
 
-    def OnZoomGesture(self, event):
+    def _on_zoom_gesture(self, event):
         """ Process pinch zoom gesture """
-        if self.is_panning: self.FinishPan(False)
+        if self.is_panning: self._finish_pan(False)
         old_zoom = self.zoom_factor
         new_zoom_factor = event.GetZoomFactor()
 
@@ -318,51 +317,51 @@ class ViewerPanel(wx.Panel):
                 new_zoom_factor = old_zoom + 2
 
         self.zoom_factor = new_zoom_factor
-        self.OnZoom(old_zoom, self.zoom_factor, event.GetPosition())
+        self._on_zoom(old_zoom, self.zoom_factor, event.GetPosition())
 
 
-    def OnDoubleClick(self, event):
+    def _on_double_click(self, event):
         """ Zoom in by 50% """
         old_zoom = self.zoom_factor
         self.zoom_factor = old_zoom * 1.5
-        self.OnZoom(old_zoom, self.zoom_factor, event.GetPosition())
+        self._on_zoom(old_zoom, self.zoom_factor, event.GetPosition())
 
 
-    def OnZoomOutButton(self, event):
+    def _on_zoom_out_button(self, event):
         """ Zoom out by 50% """
         old_zoom = self.zoom_factor
         self.zoom_factor = old_zoom * 0.5
-        centre = self.GetViewerPanelCentre()
-        self.OnZoom(old_zoom, self.zoom_factor, centre)
+        centre = self._get_viewer_panel_centre()
+        self._on_zoom(old_zoom, self.zoom_factor, centre)
 
 
-    def OnZoomInButton(self, event):
+    def _on_zoom_in_button(self, event):
         """ Zoom in by 50% """
         old_zoom = self.zoom_factor
         self.zoom_factor = old_zoom * 1.5
-        centre = self.GetViewerPanelCentre()
-        self.OnZoom(old_zoom, self.zoom_factor, centre)
+        centre = self._get_viewer_panel_centre()
+        self._on_zoom(old_zoom, self.zoom_factor, centre)
 
 
 
 
-### Base class supporting ViewerPanel ----------------------------------
+### _Base class supporting _ViewerPanel ----------------------------------
 
-class BasePanel(wx.Panel):
-    """ Base panel to support ViewerPanel and Zoom buttons """
+class _BasePanel(wx.Panel):
+    """ _Base panel to support _ViewerPanel and Zoom buttons """
 
     def __init__(self, image_file, *args, **kw):
         super().__init__(*args, **kw)
         self.image_file = image_file
-        self.InitUI()
-        self.SetBindings()
+        self._init_ui()
+        self._set_bindings()
 
 
-    def InitUI(self):
-        """ Add ViewerPanel and Zoom button widgets to self """
+    def _init_ui(self):
+        """ Add _ViewerPanel and Zoom button widgets to self """
 
         # Create panel components
-        viewer_panel = ViewerPanel(image_file=self.image_file,
+        viewer_panel = _ViewerPanel(image_file=self.image_file,
                                    parent=self,
                                    id=wx.ID_ANY)
         self.zoom_out_btn = wx.Button(self, label='-',
@@ -391,31 +390,31 @@ class BasePanel(wx.Panel):
         self.SetSizer(main_sizer)
 
 
-    def SetBindings(self):
+    def _set_bindings(self):
         """ Bind zoom buttons to their event handlers """
-        self.zoom_out_btn.Bind(wx.EVT_BUTTON, self.OnZoomOut)
-        self.zoom_in_btn.Bind(wx.EVT_BUTTON, self.OnZoomIn)
-        self.reset_btn.Bind(wx.EVT_BUTTON, self.OnReset)
+        self.zoom_out_btn.Bind(wx.EVT_BUTTON, self._on_zoomOut)
+        self.zoom_in_btn.Bind(wx.EVT_BUTTON, self._on_zoomIn)
+        self.reset_btn.Bind(wx.EVT_BUTTON, self._on_reset)
 
 
-    def OnZoomOut(self, event):
-        """ Post Zoom Out Button event to ViewerPanel """
+    def _on_zoomOut(self, event):
+        """ Post Zoom Out Button event to _ViewerPanel """
         event = wx.CommandEvent(wx.EVT_BUTTON.typeId,
                                 self.zoom_out_btn.Id)
         viewer_panel = self.GetChildren()[0]
         viewer_panel.GetEventHandler().ProcessEvent(event)
 
 
-    def OnZoomIn(self, event):
-        """ Post Zoom In Button event to ViewerPanel """
+    def _on_zoomIn(self, event):
+        """ Post Zoom In Button event to _ViewerPanel """
         event = wx.CommandEvent(wx.EVT_BUTTON.typeId,
                                 self.zoom_in_btn.Id)
         viewer_panel = self.GetChildren()[0]
         viewer_panel.GetEventHandler().ProcessEvent(event)
 
 
-    def OnReset(self, event):
-        """ Post Reset Button event to ViewerPanel """
+    def _on_reset(self, event):
+        """ Post Reset Button event to _ViewerPanel """
         event = wx.CommandEvent(wx.EVT_BUTTON.typeId,
                                 self.reset_btn.Id)
         viewer_panel = self.GetChildren()[0]
@@ -423,13 +422,13 @@ class BasePanel(wx.Panel):
 
 
 
-class Base(wx.Frame):
-    """ Base frame to support Base Panel """
+class _Base(wx.Frame):
+    """ _Base frame to support _Base Panel """
 
     def __init__(self, image_file, *args, **kw):
         wx.Frame.__init__(self, *args, **kw)
         self.temp_file = None
-        panel = BasePanel(image_file=image_file, parent=self,
+        panel = _BasePanel(image_file=image_file, parent=self,
                           id=wx.ID_ANY)
 
         # Set frame size limits
@@ -459,11 +458,10 @@ def view(parent, image_file):
     This function should be called from a currently running wxpython app.
     """
     wx.InitAllImageHandlers()
-    base = Base(image_file=image_file, parent=parent,
+    base = _Base(image_file=image_file, parent=parent,
                 id=wx.ID_ANY, title='Image Viewer',
                 pos=wx.DefaultPosition, size=(400,300),
-                style=wx.DEFAULT_FRAME_STYLE,
-                name='ImageViewer')
+                style=wx.DEFAULT_FRAME_STYLE)
 
 
 
@@ -471,11 +469,10 @@ def main(image_file):
     """ Initialises wx app to use ImageViewer """
     app = wx.App(False)
     wx.InitAllImageHandlers()
-    base = Base(image_file=image_file, parent=None,
+    base = _Base(image_file=image_file, parent=None,
                 id=wx.ID_ANY, title='Image Viewer',
                 pos=wx.DefaultPosition, size=(400,300),
-                style=wx.DEFAULT_FRAME_STYLE,
-                name='ImageViewer')
+                style=wx.DEFAULT_FRAME_STYLE)
     app.MainLoop()
 
 if __name__ == '__main__':
