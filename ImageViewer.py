@@ -465,12 +465,3 @@ def view(image_file):
     app.MainLoop()
 
 
-if __name__ == '__main__':
-    """ Run ImageViewer with test images """
-    # Uncomment line with image you wish to test. 
-    
-    #view(image_file = 'images/small.png')
-    view(image_file = 'images/medium.jpg')
-    #view(image_file = 'images/medium_vertical.jpg')
-    #view(image_file = 'images/nebula.webp')
-    
