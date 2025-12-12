@@ -58,6 +58,9 @@ class ViewerPanel(wx.Panel):
         # Pan binding
         self.Bind(wx.EVT_LEFT_DOWN, self.OnLeftDown)
         
+        # Reset binding
+        self.Bind(wx.EVT_BUTTON, self.OnResetButton, id=3)
+        
     
     ## Utility methods --------------------------------------------
     
@@ -67,6 +70,13 @@ class ViewerPanel(wx.Panel):
         panel_centre = (panel_size[0] / 2,
                         panel_size[1] / 2) # w x h
         return panel_centre
+    
+    
+    def OnResetButton(self, event):
+        """ Restore ViewerPanel to initial state """
+        self.InitGraphicsAttr(self.image_file)
+        self.InitVecAttr()
+        self.Refresh()
         
     
     ## Paint methods ----------------------------------------------------
@@ -317,14 +327,12 @@ class BasePanel(wx.Panel):
         viewer_panel = ViewerPanel(image_file=self.image_file, 
                                    parent=self,
                                    id=wx.ID_ANY)
-        
         self.zoom_out_btn = wx.Button(self, label='-', 
                                       size=(30,30), id=1)
         self.zoom_in_btn = wx.Button(self, label='+', 
                                      size=(30,30), id=2)
         self.reset_btn = wx.Button(self, label='Reset',
                                       size=(30,30), id=3)
-        
         
         # Add viewer panel to main sizer
         main_sizer = wx.BoxSizer(wx.VERTICAL)
@@ -349,6 +357,7 @@ class BasePanel(wx.Panel):
         """ Bind zoom buttons to their event handlers """
         self.zoom_out_btn.Bind(wx.EVT_BUTTON, self.OnZoomOut)
         self.zoom_in_btn.Bind(wx.EVT_BUTTON, self.OnZoomIn)
+        self.reset_btn.Bind(wx.EVT_BUTTON, self.OnReset)
     
     
     def OnZoomOut(self, event):
@@ -358,11 +367,17 @@ class BasePanel(wx.Panel):
         viewer_panel = self.GetChildren()[0]
         viewer_panel.GetEventHandler().ProcessEvent(event)
         
-    
     def OnZoomIn(self, event):
         """ Post Zoom In Button event to ViewerPanel """
         event = wx.CommandEvent(wx.EVT_BUTTON.typeId,
                                 self.zoom_in_btn.Id)
+        viewer_panel = self.GetChildren()[0]
+        viewer_panel.GetEventHandler().ProcessEvent(event)
+    
+    def OnReset(self, event):
+        """ Post Reset Button event to ViewerPanel """
+        event = wx.CommandEvent(wx.EVT_BUTTON.typeId,
+                                self.reset_btn.Id)
         viewer_panel = self.GetChildren()[0]
         viewer_panel.GetEventHandler().ProcessEvent(event)
 
