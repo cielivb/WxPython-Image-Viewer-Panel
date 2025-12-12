@@ -453,8 +453,22 @@ class Base(wx.Frame):
 
 ### Execution functions -------------------------------------------------
         
+        
 def view(image_file):
-    """ Open and run image viewer, which will display given image file """
+    """ Open and run image viewer, which will display given image file.
+    This function should be called from a currently running wxpython app.
+    """
+    wx.InitAllImageHandlers()
+    base = Base(image_file=image_file, parent=None, 
+                id=wx.ID_ANY, title='Image Viewer',
+                pos=wx.DefaultPosition, size=(400,300),
+                style=wx.DEFAULT_FRAME_STYLE,
+                name='ImageViewer')    
+    
+
+
+def main(image_file):
+    """ Initialises wx app to use ImageViewer """
     app = wx.App(False)
     wx.InitAllImageHandlers()
     base = Base(image_file=image_file, parent=None, 
@@ -462,6 +476,7 @@ def view(image_file):
                 pos=wx.DefaultPosition, size=(400,300),
                 style=wx.DEFAULT_FRAME_STYLE,
                 name='ImageViewer')
-    app.MainLoop()
+    app.MainLoop()        
 
-
+if __name__ == '__main__':
+    main('images/medium.jpg')
