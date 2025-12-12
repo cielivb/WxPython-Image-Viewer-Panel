@@ -4,7 +4,7 @@
 ![](https://img.shields.io/github/commit-activity/t/cielivb/ImageViewer?color=yellow)
 ![](https://img.shields.io/github/contributors/cielivb/ImageViewer?color=yellow)
 ![](https://img.shields.io/github/languages/top/cielivb/ImageViewer?color=yellow)
-![](https://img.shields.io/github/license/cielivb/ImageViewer?color=yellow)
+![Github License](https://img.shields.io/github/license/cielivb/ImageViewer?color=yellow)
 <!-- badges: end -->
 
 # WxPython-Image-Viewer-Panel
