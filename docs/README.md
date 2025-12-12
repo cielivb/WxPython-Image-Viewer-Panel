@@ -41,6 +41,13 @@ tests.py contains the code for a tiny WxPython app that implements the core func
 - Put ImageViewer.py in the same directory as your WxPython script
 - Import ImageViewer.py into your WxPython script, e.g., <code>import ImageViewer as iv</code>
 - Set your binding/s
-- In your event handler, call <code>iv.view(self, 'imagepath')</code>, and an ImageViewer displaying the image located at your imagepath should appear.
+- In your event handler, call <code>iv.view(parent=self, image_file='imagepath')</code>, and an ImageViewer displaying the image located at your imagepath should appear.
 
 You will need to install the following packages if you don't already have them: wx, numpy, pillow.
+
+
+## Credits
+This logic behind this project took much inspiration from [this C++ demo example](https://forums.wxwidgets.org/viewtopic.php?p=196414#p196414). Credits also to the [WxPython docs](https://docs.wxpython.org/index.html), the [WxWidgets docs](https://docs.wxwidgets.org/stable/), and the mountains of discussion forums on these sites!
+
+## License
+This project is under the [MIT License](LICENSE). 
