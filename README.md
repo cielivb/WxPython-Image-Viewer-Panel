@@ -3,8 +3,8 @@
 ![](https://img.shields.io/github/last-commit/cielivb/ImageInspector?color=yellow)
 ![](https://img.shields.io/github/commit-activity/t/cielivb/ImageInspector?color=yellow)
 ![](https://img.shields.io/github/contributors/cielivb/ImageInspector?color=yellow)
-![](https://img.shields.io/github/languages/top/cielivb/ImageInspector?color=yellow)
-<!--![Github License](https://img.shields.io/github/license/cielivb/ImageInspector?color=yellow)--> <!--Shows unspecified?-->
+![](https://img.shields.io/github/languages/top/cielivb/ImageInspector?color=magenta)
+![Github License](https://img.shields.io/github/license/cielivb/ImageInspector?color=yellow)
 <!-- badges: end -->
 
 # ImageInspector
