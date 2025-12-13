@@ -93,16 +93,19 @@ class _ViewerPanel(wx.Panel):
         self.Refresh()
 
 
+    def _process_image_file_name(self, image_file):
+        """ Standardise image file name """
+        filename = image_file.split('/')[-1] # Just filename with ext
+        filename = filename.split('.')[0] + '.png' # Replace extension
+        filename = os.path.join(os.path.dirname(__file__), 'temp', filename)
+        return filename
+
+
     def _retrieve_from_web(self, image_file):
         """ Load image file from internet as wx.Image object """
         response = requests.get(image_file)
         if response.status_code == 200: # Image successfully found
-            
-            # Process filename
-            filename = image_file.split('/')[-1] # Just the filename with ext
-            filename = filename.split('.')[0] + '.png' # Replace extension
-            filename = os.path.join(os.path.dirname(__file__), 'temp', filename)            
-            # Process bytes into wx.Image
+            filename = self._process_image_file_name(image_file)            
             image_bytes = response.content
             image = PILImage.open(BytesIO(image_bytes))
             image.save(filename)
@@ -117,21 +120,20 @@ class _ViewerPanel(wx.Panel):
         """ Load image file as wx.Image object """
 
         if image_file.startswith('http'):
-            image, image_file = self._retrieve_from_web(image_file)
+            image, filename = self._retrieve_from_web(image_file)
 
         # Convert .webp image file to .png file
         elif image_file.endswith('.webp'):
             image = PILImage.open(image_file)
-            image_file = image_file.split('/')[-1] # Just filename with ext
-            image_file = image_file.split('.')[0] + '.png' # Replace extension
-            image_file = os.path.join(os.path.dirname(__file__), 'temp', image_file)
-            image.save(image_file, 'PNG')
-            image = wx.Image(image_file)
+            filename = self._process_image_file_name(image_file)
+            image.save(filename, 'PNG')
+            image = wx.Image(filename)
         
         else:
-            image = wx.Image(image_file)
+            filename = image_file
+            image = wx.Image(filename)
 
-        self.GetParent().GetParent().temp_file = image_file
+        self.GetParent().GetParent().temp_file = filename
 
         return image
 
